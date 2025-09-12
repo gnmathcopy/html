@@ -46,6 +46,7 @@
         if (!isMobile) {
             return;
         }
+        
         let i = setInterval(function () {
             if (true) {
                 let zoneStatic = document.createElement("div");
@@ -59,21 +60,29 @@
                     color: 'red',
                     catchDistance: 30
                 });
+                function sendKeyEvent(key, type = "keydown") {
+    const event = new KeyboardEvent(type, {
+        key: key,
+        code: key,
+        bubbles: true
+    });
+    document.dispatchEvent(event);
+}
                 setTimeout(function () {
                     joystick.on("dir", function (e, data) {
                         let dirs = ["up", "down", "left", "right"];
                         for (let o of dirs) {
                             if (o !== data.direction.angle) {
-                                fakeInput.up(o);
+                                sendKeyEvent(o, "keyup");
                             } else {
-                                fakeInput.down(o);
+                                sendKeyEvent(o, "keydown");
                             }
                         }
                     });
                     joystick.on("end", function () {
                         let dirs = ["up", "down", "left", "right"];
                         for (let o of dirs) {
-                            fakeInput.up(o);
+                            sendKeyEvent(o, "keyup");
                         }
                     });
                 }, 100);
@@ -102,11 +111,11 @@
                     button.innerText = text;
                     button.addEventListener("touchstart", function (e) {
                         e.preventDefault();
-                        fakeInput.down(key);
+                        sendKeyEvent(key, "keydown");
                     });
                     button.addEventListener("touchend", function (e) {
                         e.preventDefault();
-                        fakeInput.up(key);
+                        sendKeyEvent(key, "keyup");
                     });
                     document.body.appendChild(button);
                     return button;
@@ -127,6 +136,7 @@
     })();
     </script>
 </html>
+
 
 
 
