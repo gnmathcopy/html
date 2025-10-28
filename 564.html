@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+    <base href="https://cdn.jsdelivr.net/gh/gnmathcopy/assets@main/564/">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity Web Player | Backrooms 2D</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <link rel="manifest" href="manifest.webmanifest">
+    <script src="https://cdn.jsdelivr.net/gh/gnmathcopy/assets@main/merge.js"></script>
+</head>
+
+<body>
+    <div id="loading-text" style="color: black; font-family: cursive; font-size: 48px; text-align: center; margin-top: 20px;">
+        LOADING...
+    </div>
+
+    <div id="unity-container" hidden>
+        <canvas id="unity-canvas" width="960" height="600" tabindex="-1"></canvas>
+        <div id="unity-loading-bar">
+            <div id="unity-logo"></div>
+            <div id="unity-progress-bar-empty">
+                <div id="unity-progress-bar-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        Promise.all([
+            window.mergeFiles(window.getParts("Build/Backrooms2D.wasm.br", 1, 3)),
+            window.mergeFiles(window.getParts("Build/Backrooms2D.data.br", 1, 12)),
+        ]).then(([wasmUrl, dataUrl]) => {
+            document.getElementById('loading-text').remove();
+
+            window.addEventListener("load", function () {
+                if ("serviceWorker" in navigator) {
+                    navigator.serviceWorker.register("ServiceWorker.js");
+                }
+            });
+
+            var container = document.querySelector("#unity-container");
+            var canvas = document.querySelector("#unity-canvas");
+            var loadingBar = document.querySelector("#unity-loading-bar");
+            var progressBarFull = document.querySelector("#unity-progress-bar-full");
+
+            container.removeAttribute("hidden");
+
+            function unityShowBanner(msg, type) {
+                // можно добавить отображение предупреждений Unity
+            }
+
+            var buildUrl = "Build";
+            var loaderUrl = buildUrl + "/Backrooms2D.loader.js";
+            var config = {
+                arguments: [],
+                dataUrl: dataUrl,
+                frameworkUrl: buildUrl + "/Backrooms2D.framework.js",
+                codeUrl: wasmUrl,
+                streamingAssetsUrl: "StreamingAssets",
+                companyName: "gnmathcopy",
+                productName: "Backrooms 2D",
+                productVersion: "1.0.0",
+                showBanner: unityShowBanner,
+            };
+
+            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                var meta = document.createElement('meta');
+                meta.name = 'viewport';
+                meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+                document.getElementsByTagName('head')[0].appendChild(meta);
+            }
+
+            loadingBar.style.display = "block";
+
+            var script = document.createElement("script");
+            script.src = loaderUrl;
+            script.onload = () => {
+                createUnityInstance(canvas, config, (progress) => {
+                    progressBarFull.style.width = 100 * progress + "%";
+                }).then((unityInstance) => {
+                    loadingBar.style.display = "none";
+                }).catch((message) => {
+                    alert(message);
+                });
+            };
+            document.body.appendChild(script);
+        });
+    </script>
+</body>
+
+</html>
