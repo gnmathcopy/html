@@ -56,16 +56,26 @@
 
         // Пути к файлам Unity (лежат прямо в папке 564)
         // Пути к файлам Unity (лежат в папке Build)
-        var loaderUrl = "Build/2-4-23.loader.js";
-        var config = {
-            dataUrl: "Build/2-4-23.data",
-            frameworkUrl: "Build/2-4-23.framework.js",
-            codeUrl: "Build/2-4-23.wasm",
-            streamingAssetsUrl: "StreamingAssets",
-            companyName: "gnmathcopy",
-            productName: "Backrooms 2D",
-            productVersion: "1.0.0"
-        };
+    var loaderUrl = "Build/2-4-23.loader.js";
+    var config = {
+        dataUrl: "Build/2-4-23.data",
+        frameworkUrl: "Build/2-4-23.framework.js",
+        codeUrl: "Build/2-4-23.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "gnmathcopy",
+        productName: "Backrooms 2D",
+        productVersion: "1.0.0"
+    };
+
+    var canvas = document.querySelector("#unity-canvas");
+    createUnityInstance(canvas, config, (progress) => {
+        document.querySelector("#unity-progress-bar-full").style.width = (100 * progress) + "%";
+    }).then(() => {
+        document.getElementById('loading-text').remove();
+        document.querySelector("#unity-loading-bar").style.display = "none";
+    }).catch((err) => {
+        alert("Unity error: " + err);
+    });
 
 
 
