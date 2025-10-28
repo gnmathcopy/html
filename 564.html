@@ -2,12 +2,12 @@
 <html lang="en-us">
 
 <head>
-    <!-- Базовый путь к папке с файлами Unity -->
+    <!-- Путь к папке с файлами Unity на GitHub -->
     <base href="https://cdn.jsdelivr.net/gh/gnmathcopy/assets@main/564/">
 
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity Web Player | Backrooms 2D</title>
+    <title>Backrooms 2D</title>
 
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
@@ -28,11 +28,10 @@
     </div>
 
     <script>
-        // Показ загрузки
+        // Текст "LOADING..."
         document.getElementById('loading-text').textContent = "LOADING...";
 
         window.addEventListener("load", function () {
-            // Регистрация service worker (кэширование)
             if ("serviceWorker" in navigator) {
                 navigator.serviceWorker.register("ServiceWorker.js");
             }
@@ -46,7 +45,7 @@
         container.removeAttribute("hidden");
         loadingBar.style.display = "block";
 
-        // Путь к файлам Unity сборки
+        // Пути к сборке Unity в папке 564
         var buildUrl = "Build";
         var loaderUrl = buildUrl + "/2-4-23.loader.js";
 
