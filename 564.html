@@ -1,84 +1,34 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Backrooms 2D</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Murder</title>
+
   <style>
-    body {
+    html, body {
       margin: 0;
-      background: #000;
-      color: white;
-      font-family: sans-serif;
-      text-align: center;
-    }
-    #unity-canvas {
-      width: 960px;
-      height: 600px;
-      background: #000;
-    }
-    #unity-loading-bar {
-      width: 960px;
-      margin: 20px auto;
-      background: #333;
-      height: 20px;
-    }
-    #unity-progress-bar-full {
-      width: 0%;
+      padding: 0;
       height: 100%;
-      background: #4CAF50;
+      width: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+
+    iframe {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
     }
   </style>
 </head>
 <body>
-  <div id="loading-text" style="font-size: 36px; margin-top: 40px;">LOADING...</div>
-  <div id="unity-container" hidden>
-    <canvas id="unity-canvas" width="960" height="600"></canvas>
-    <div id="unity-loading-bar">
-      <div id="unity-progress-bar-full"></div>
-    </div>
-  </div>
-  <script>
-    const container = document.querySelector("#unity-container");
-    const canvas = document.querySelector("#unity-canvas");
-    const progressBarFull = document.querySelector("#unity-progress-bar-full");
-    container.hidden = false;
-    // 🔧 Путь к билд-файлам (в assets, не в html)
-    const buildRoot = "https://cdn.jsdelivr.net/gh/gnmathcopy/assets@main/564/Build/";
-    // 🔧 Пути Unity-билда (точно проверь имена файлов!)
-    const loaderUrl = buildRoot + "2-4-23.loader.js";
-    const config = {
-      dataUrl: buildRoot + "2-4-23.data",
-      frameworkUrl: buildRoot + "2-4-23.framework.js",
-      codeUrl: buildRoot + "2-4-23.wasm",
-      streamingAssetsUrl: buildRoot + "StreamingAssets",
-      companyName: "gnmathcopy",
-      productName: "Backrooms 2D",
-      productVersion: "1.0.0",
-      // если сервер не ставит Content-Encoding — поможет распаковать
-      decompressionFallback: true
-    };
-    // мобильная адаптация
-    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-      const meta = document.createElement('meta');
-      meta.name = 'viewport';
-      meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-      document.head.appendChild(meta);
-    }
-    // загрузка Unity
-    const script = document.createElement("script");
-    script.src = loaderUrl;
-    script.onload = () => {
-      createUnityInstance(canvas, config, (progress) => {
-        progressBarFull.style.width = (100 * progress) + "%";
-      }).then(() => {
-        document.getElementById('loading-text').remove();
-        document.getElementById('unity-loading-bar').style.display = "none";
-      }).catch((err) => {
-        alert("Unity error: " + err);
-      });
-    };
-    document.body.appendChild(script);
-  </script>
+  <iframe 
+    src="https://lnabros.github.io/a5/murder"
+    allowfullscreen>
+  </iframe>
 </body>
 </html>
