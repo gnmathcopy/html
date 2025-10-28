@@ -55,16 +55,18 @@
         loadingBar.style.display = "block";
 
         // Пути к файлам Unity (лежат прямо в папке 564)
-        var loaderUrl = "2-4-23.loader.js";
+        // Пути к файлам Unity (лежат в папке Build)
+        var loaderUrl = "Build/2-4-23.loader.js";
         var config = {
-            dataUrl: "2-4-23.data",
-            frameworkUrl: "2-4-23.framework.js",
-            codeUrl: "2-4-23.wasm",
-            streamingAssetsUrl: "StreamingAssets",
-            companyName: "gnmathcopy",
-            productName: "Backrooms 2D",
-            productVersion: "1.0.0"
-        };
+        dataUrl: "Build/2-4-23.data",
+        frameworkUrl: "Build/2-4-23.framework.js",
+        codeUrl: "Build/2-4-23.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "gnmathcopy",
+        productName: "Backrooms 2D",
+        productVersion: "1.0.0"
+    };
+
 
         // Мобильная адаптация
         if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
