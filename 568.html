@@ -7,21 +7,23 @@
   <title>1 on 1 Soccer | MacVG</title>
   <style>
     body { margin: 0; overflow: hidden; background: #000; }
-    #loader { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: sans-serif; }
-    #gameCanvas, #orientation, #content { position: absolute; top:0; left:0; width:100%; height:100%; }
+    #loader {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      color: white; font-family: sans-serif; z-index: 1000;
+    }
+    #gameCanvas, #orientation, #content {
+      position: absolute; top:0; left:0; width:100%; height:100%;
+    }
   </style>
 </head>
 <body>
+  <div id="loader">Loading ...</div>
   <div id="orientation"></div>
   <div id="gameCanvas"></div>
-  <div id="loader">Loading ...</div>
   <div id="content"></div>
 
 <script>
-(function() {
-  console.log("[loader] Запуск автоматического загрузчика игры через jsDelivr...");
-
-  // Все нужные файлы для игры
+(async function() {
   const files = [
     "version.js",
     "1-on-1-soccer.min.js",
@@ -32,84 +34,49 @@
     "patch/cdn/kizi/splash.js"
   ];
 
-  // Создание URL через jsDelivr
   function getCDNUrl(path) {
     return `https://cdn.jsdelivr.net/gh/gnmathcopy/assets@main/567/${path}`;
   }
 
-  // Проверка доступности файлов
-  async function checkFile(url) {
-    try {
-      const res = await fetch(url, { method: 'HEAD' });
-      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-      console.log(`[loader] Проверено: ${url} — доступен (content-type: ${res.headers.get('content-type')})`);
-      return true;
-    } catch(e) {
-      console.error(`[loader] Ошибка доступа к файлу: ${url}\nПричина: ${e.message}`);
-      return false;
+  // Создаём все контейнеры, если их нет
+  const requiredIds = ["content", "gameCanvas", "loader", "orientation"];
+  requiredIds.forEach(id => {
+    if (!document.getElementById(id)) {
+      const div = document.createElement("div");
+      div.id = id;
+      document.body.appendChild(div);
     }
-  }
+  });
 
-  async function preflight() {
-    console.log("[loader] Запуск предварительной проверки файлов через jsDelivr...");
-    let allOk = true;
-    for (const f of files) {
-      const ok = await checkFile(getCDNUrl(f));
-      if (!ok) allOk = false;
-    }
-    return allOk;
-  }
+  // Загружаем CSS
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = getCDNUrl("css/stylesheet.css");
+  document.head.appendChild(link);
 
-  // Динамическая загрузка JS и CSS
+  // Функция для загрузки скриптов
   function loadScript(url) {
     return new Promise((resolve, reject) => {
       const s = document.createElement('script');
       s.src = url + "?v=" + Date.now();
-      s.onload = () => { console.log(`[loader] Загружен скрипт: ${url}`); resolve(); };
-      s.onerror = (e) => { console.error(`[loader] Не удалось загрузить скрипт: ${url}`); reject(e); };
+      s.onload = () => resolve();
+      s.onerror = e => reject(new Error(`Не удалось загрузить скрипт: ${url}`));
       document.body.appendChild(s);
     });
   }
 
-  function loadCSS(url) {
-    return new Promise((resolve, reject) => {
-      const l = document.createElement('link');
-      l.rel = "stylesheet";
-      l.href = url;
-      l.onload = () => { console.log(`[loader] Загружен CSS: ${url}`); resolve(); };
-      l.onerror = (e) => { console.error(`[loader] Не удалось загрузить CSS: ${url}`); reject(e); };
-      document.head.appendChild(l);
-    });
-  }
-
-  async function startGame() {
-    const allOk = await preflight();
-    if (!allOk) {
-      console.error("[loader] Предварительная проверка не пройдена. Игра не запущена.");
-      return;
-    }
-
-    console.log("[loader] Все файлы доступны. Начинаем загрузку...");
-
-    // Загружаем CSS
-    await loadCSS(getCDNUrl("css/stylesheet.css"));
-
+  try {
     // Загружаем version.js
     await loadScript(getCDNUrl("version.js"));
-
-    // Загружаем основной JS игры
+    // Загружаем основной скрипт игры
     await loadScript(getCDNUrl("1-on-1-soccer.min.js"));
-
-    console.log("[loader] Игра загружена. Если есть ошибки в консоли — читай подробные объяснения выше.");
+    console.log("✅ Игра загружена. Можно играть!");
+    // Убираем loader
+    const loader = document.getElementById("loader");
+    if (loader) loader.style.display = "none";
+  } catch(e) {
+    console.error("Ошибка загрузки игры:", e);
   }
-
-  // Убедимся, что DOM готов
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", startGame);
-  } else {
-    startGame();
-  }
-
 })();
 </script>
 </body>
