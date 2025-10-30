@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <title>1 on 1 Soccer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <!-- Устанавливаем базовый путь для всех файлов -->
+
+  <!-- jsDelivr берёт файлы только из твоего GitHub -->
   <base href="https://cdn.jsdelivr.net/gh/gnmathcopy/assets@main/567/">
-  
+
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      background: black;
       overflow: hidden;
+      background: black;
       width: 100%;
       height: 100%;
     }
@@ -25,26 +25,25 @@
   </style>
 </head>
 <body>
-  <!-- Контейнер, который ищет игра -->
   <div id="content"></div>
 
-  <!-- Основной JS-файл игры -->
-  <script src="1-on-1-soccer.min.js?v=25"></script>
-
-  <!-- Все патчи и библиотеки Phaser и KiZi -->
-  <script src="patch/cdn/phaser/phaser-ads.min.js"></script>
-  <script src="patch/cdn/phaser/phaser-cachebuster.min.js"></script>
-  <script src="patch/cdn/phaser/phaser-spine.min.js"></script>
-  <script src="patch/cdn/kizi/splash.js"></script>
-
-  <!-- Проверка загрузки -->
   <script>
-    window.addEventListener("load", () => {
-      console.log("✅ Игра 1-on-1 Soccer загружена через jsDelivr!");
-      const content = document.getElementById("content");
-      if (!content) {
-        console.error("❌ Элемент #content не найден! Добавь <div id='content'></div> в HTML.");
+    // === Исправляем пути к патчам Phaser и Kizi ===
+    window.__patchRoot = "https://cdn.jsdelivr.net/gh/gnmathcopy/assets@main/567/patch/cdn/";
+    const originalXHR = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (method, url) {
+      if (url.includes("/patch/cdn/")) {
+        url = window.__patchRoot + url.split("/patch/cdn/")[1];
       }
+      originalXHR.call(this, method, url);
+    };
+
+    // === Загружаем игру после полной загрузки страницы ===
+    window.addEventListener("load", () => {
+      console.log("✅ Загружаем 1-on-1 Soccer через jsDelivr...");
+      const script = document.createElement("script");
+      script.src = "1-on-1-soccer.min.js?v=25";
+      document.body.appendChild(script);
     });
   </script>
 </body>
