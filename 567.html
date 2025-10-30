@@ -9,7 +9,7 @@
     />
     <title>1 on 1 Soccer | gnmathcopy</title>
 
-    <!-- Стили также из GitHub через jsDelivr -->
+    <!-- CSS через jsDelivr -->
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/gnmathcopy/assets@main/567/css/stylesheet.css"
@@ -18,36 +18,39 @@
   </head>
 
   <body style="overflow: hidden">
-    <div id="orientation"></div>
-    <div id="gameCanvas"></div>
-    <div id="loader">Loading ...</div>
+    <!-- 👇 этот блок нужен, чтобы убрать ошибку -->
+    <div id="content">
+      <div id="orientation"></div>
+      <div id="gameCanvas"></div>
+      <div id="loader">Loading ...</div>
+    </div>
 
     <script type="text/javascript">
-      // Фейковая функция аналитики (чтобы код игры не вызывал ошибку)
       const ga = function () {
         console.log("ga", arguments);
       };
 
-      // Ссылки на все файлы из GitHub (через jsDelivr)
       const baseURL = "https://cdn.jsdelivr.net/gh/gnmathcopy/assets@main/567/";
       const versionFile = baseURL + "version.js";
       const gameFile = baseURL + "1-on-1-soccer.min.js";
 
-      // Функция добавления скрипта в документ
       function addScript(src, buster, callback) {
         const s = document.createElement("script");
-        s.src = src + "?v=" + buster; // чтобы не кешировалось
+        s.src = src + "?v=" + buster;
         if (typeof callback === "function") {
           s.onload = callback;
         }
         document.body.appendChild(s);
       }
 
-      // Подряд загружаем version.js, затем игру
       addScript(versionFile, Date.now(), function () {
-        addScript(gameFile, typeof version !== "undefined" ? version : Date.now(), function () {
-          console.log("✅ Игра загружена через jsDelivr");
-        });
+        addScript(
+          gameFile,
+          typeof version !== "undefined" ? version : Date.now(),
+          function () {
+            console.log("✅ Игра загружена через jsDelivr");
+          }
+        );
       });
     </script>
   </body>
