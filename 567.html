@@ -1,50 +1,225 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>1 on 1 Soccer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- jsDelivr берёт файлы только из твоего GitHub -->
-  <base href="https://cdn.jsdelivr.net/gh/gnmathcopy/assets@main/567/">
-
+  <meta charset="utf-8" />
+  <title>1-on-1 Soccer — jsDelivr loader (diagnostics)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: black;
-      width: 100%;
-      height: 100%;
-    }
-    #content {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
+    html,body{height:100%;margin:0;background:#000;color:#eee;font-family:system-ui,Segoe UI,Roboto,Arial;}
+    #content{width:100%;height:100%;display:block;}
+    #diagnostics{position:fixed;right:8px;bottom:8px;z-index:9999;background:rgba(0,0,0,0.7);color:#fff;padding:8px;border-radius:6px;font-size:12px;max-width:320px;}
+    #diagnostics b{color:#7ef;}
   </style>
 </head>
 <body>
+  <!-- Контейнер, который обычно ожидает игра -->
   <div id="content"></div>
 
+  <!-- Мини-панель состояния (необязательно) -->
+  <div id="diagnostics"><b>Loader:</b> готов к проверке. Смотри консоль для деталей.</div>
+
   <script>
-    // === Исправляем пути к патчам Phaser и Kizi ===
-    window.__patchRoot = "https://cdn.jsdelivr.net/gh/gnmathcopy/assets@main/567/patch/cdn/";
-    const originalXHR = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function (method, url) {
-      if (url.includes("/patch/cdn/")) {
-        url = window.__patchRoot + url.split("/patch/cdn/")[1];
+  (function(){
+    // ========== Настройки (изменяй по необходимости) ==========
+    const REPO = "gnmathcopy/assets";
+    const BRANCH = "main";
+    const DIR = "567"; // папка с игрой
+    const baseJSDelivr = `https://cdn.jsdelivr.net/gh/${REPO}@${BRANCH}/${DIR}/`;
+
+    // Список основных ресурсов, которые будем проверять
+    const expectedFiles = [
+      "version.js",
+      "1-on-1-soccer.min.js",
+      // патчи/внешние библиотеки (если их нет — будет подробное сообщение)
+      "patch/cdn/phaser/phaser-ads.min.js",
+      "patch/cdn/phaser/phaser-cachebuster.min.js",
+      "patch/cdn/phaser/phaser-spine.min.js",
+      "patch/cdn/kizi/splash.js",
+      // стили (если есть)
+      "css/stylesheet.css"
+    ];
+
+    // Вспомогательная функция логирования с пометками
+    function info(...args){ console.info("[loader] ", ...args); }
+    function warn(...args){ console.warn("[loader] ", ...args); }
+    function error(...args){ console.error("[loader] ", ...args); }
+
+    // Очень подробный отчёт об ошибке в консоль
+    function reportResourceProblem(url, status, statusText, note){
+      error("RESOURCE LOAD FAILURE — подробности:");
+      error("  Ожидаемый URL:", url);
+      error("  Статус (HTTP):", status, statusText);
+      if (note) error("  Пояснение:", note);
+      error("  Что сделать: проверь, что файл точно лежит в репозитории:");
+      error(`    https://github.com/${REPO}/tree/${BRANCH}/${DIR}/${url.replace(baseJSDelivr, "")}`);
+      error("  Альтернатива: добавить заглушку (маленький .js), если функционал не обязателен.");
+    }
+
+    // Функция проверки наличия ресурса через fetch
+    async function checkResource(path){
+      const url = baseJSDelivr + path;
+      try {
+        const resp = await fetch(url, { method: "GET", cache: "no-store" });
+        if (!resp.ok) {
+          // если не ok — логим подробно
+          reportResourceProblem(url, resp.status, resp.statusText,
+            `Сервер ответил не OK (${resp.status}). Возможно, файл отсутствует или путь неверный.`);
+          return { ok:false, url, status:resp.status, statusText:resp.statusText };
+        }
+        // дополнительная проверка content-type (если нужно)
+        const ct = resp.headers.get("content-type") || "";
+        info(`Проверено: ${path} — доступен (content-type: ${ct})`);
+        return { ok:true, url, status:resp.status, statusText:resp.statusText };
+      } catch (ex) {
+        reportResourceProblem(url, "—", "Network/Error", `Fetch выбросил исключение: ${ex && ex.message}`);
+        return { ok:false, url, status:"error", statusText:ex && ex.message };
       }
-      originalXHR.call(this, method, url);
+    }
+
+    // ========== Перехват document.getElementById для диагностирования ==========
+    const origGetEl = document.getElementById.bind(document);
+    document.getElementById = function(id){
+      const el = origGetEl(id);
+      if (!el) {
+        // логируем только для подозрительных id (можно расширить)
+        if (["content","gameCanvas","canvas","phaser-game"].includes(String(id))) {
+          console.groupCollapsed("[loader diagnostics] getElementById -> null for id:", id);
+          console.error("Причина: игра вызвала document.getElementById('%s'), а элемент отсутствует в DOM.", id);
+          console.error("Решение: добавьте в HTML элемент с id='%s', например: <div id=\"%s\"></div>", id, id);
+          console.error("Примечание: мы уже создали <div id='content'> автоматически. Если id отличается — добавьте нужный.");
+          console.trace();
+          console.groupEnd();
+        }
+      }
+      return el;
     };
 
-    // === Загружаем игру после полной загрузки страницы ===
-    window.addEventListener("load", () => {
-      console.log("✅ Загружаем 1-on-1 Soccer через jsDelivr...");
-      const script = document.createElement("script");
-      script.src = "1-on-1-soccer.min.js?v=25";
-      document.body.appendChild(script);
+    // ========== Перехват XMLHttpRequest.open, чтобы переадресовать /patch/cdn/... на jsDelivr ==========
+    const origXHRopen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url, async, user, pass){
+      try {
+        if (typeof url === "string" && url.indexOf("/patch/cdn/") !== -1) {
+          const tail = url.split("/patch/cdn/")[1];
+          const newUrl = baseJSDelivr + "patch/cdn/" + tail;
+          console.warn(`[loader] Переписываю XHR URL: "${url}" -> "${newUrl}"`);
+          return origXHRopen.call(this, method, newUrl, async, user, pass);
+        }
+      } catch (e) {
+        console.error("[loader] Ошибка при перехвате XHR.open:", e);
+      }
+      return origXHRopen.call(this, method, url, async, user, pass);
+    };
+
+    // ========== Глобальные ловушки ошибок для подробного лога ==========
+    window.addEventListener("error", function(ev){
+      // resource error (ev.target для <script> / <link>)
+      if (ev.target && (ev.target.src || ev.target.href)) {
+        const url = ev.target.src || ev.target.href;
+        error("Ошибка загрузки ресурса:", url);
+        error("  Элемент:", ev.target.tagName);
+        error("  Возможные причины: 1) файла нет в репозитории 2) неправильный путь 3) CORS или сетевые проблемы.");
+        console.trace();
+      } else {
+        error("Runtime error caught:", ev.message, ev.filename + ":" + ev.lineno + ":" + ev.colno);
+        console.trace();
+      }
+    }, true);
+
+    window.addEventListener("unhandledrejection", function(ev){
+      error("Unhandled Promise Rejection:", ev.reason);
+      console.trace();
     });
+
+    // ========== Предпроверка всех ожидаемых файлов ==========
+    async function preflightChecks(){
+      info("Запуск предварительной проверки файлов через jsDelivr...");
+      const results = await Promise.all(expectedFiles.map(p => checkResource(p)));
+      const missing = results.filter(r => !r.ok);
+      if (missing.length === 0) {
+        info("Preflight: все ожидаемые файлы доступны через jsDelivr.");
+      } else {
+        warn("Preflight: найдены отсутствующие/проблемные файлы:", missing.map(m => m.url));
+        missing.forEach(m => {
+          // детальное сообщение уже выдал reportResourceProblem внутри checkResource
+        });
+      }
+      return { allOk: missing.length === 0, results };
+    }
+
+    // ========== Функция динамической загрузки скрипта и детального логирования ==========
+    function loadScript(path, onload, onerror){
+      const url = baseJSDelivr + path;
+      const s = document.createElement("script");
+      s.src = url + (url.includes("?") ? "&" : "?") + "v=" + Date.now();
+      s.onload = () => {
+        info(`Loaded script: ${path} (${s.src})`);
+        if (onload) onload();
+      };
+      s.onerror = (ev) => {
+        error(`Failed to load script: ${path}`);
+        reportResourceProblem(s.src, "—", "script.onerror", "Браузер не смог загрузить/выполнить скрипт.");
+        if (onerror) onerror(ev);
+      };
+      document.head.appendChild(s);
+    }
+
+    // ========== Запуск загрузки игры с детальными логами ==========
+    async function start(){
+      try {
+        const pre = await preflightChecks();
+
+        // Всегда проверяем наличие #content (и сообщаем если нет)
+        if (!document.getElementById("content")) {
+          warn("Внимание: #content отсутствует — мы сейчас создаём его автоматически.");
+          const c = document.createElement("div");
+          c.id = "content";
+          document.body.insertBefore(c, document.body.firstChild);
+        }
+
+        // Загружаем version.js сначала (чтобы получить переменную version)
+        info("Загружаем version.js...");
+        await new Promise((resolve, reject) => {
+          loadScript("version.js", () => {
+            info("version.js загружен.");
+            resolve();
+          }, (e) => {
+            warn("version.js не загрузился — продолжим, но версия может быть неизвестна.");
+            resolve(); // не откладываем полную загрузку игры
+          });
+        });
+
+        // Подождём полного onload окна, чтобы избежать ошибок доступа к DOM
+        if (document.readyState !== "complete") {
+          info("Ожидаем window.load перед загрузкой игры (чтобы DOM и все ресурсы были готовы)...");
+          await new Promise(res => window.addEventListener("load", res, { once: true }));
+        }
+
+        // Дополнительно: если игра внутри ожидает какие-то global paths, можно их задать:
+        window.__patchRoot = baseJSDelivr + "patch/cdn/";
+
+        // Сама игра: загружаем основной файл
+        info("Загружаем основной файл игры: 1-on-1-soccer.min.js ...");
+        await new Promise((resolve, reject) => {
+          loadScript("1-on-1-soccer.min.js", () => {
+            info("Основной файл игры загружен.");
+            resolve();
+          }, (ev) => {
+            error("Не удалось загрузить основной файл игры. См. предыдущие сообщения с причинами.");
+            reject(new Error("main-game-load-failed"));
+          });
+        });
+
+        info("Игра загружена. Если в консоли есть ошибки — читай подробные объяснения выше.");
+
+      } catch (e) {
+        error("Fatal loader error:", e && e.message);
+        console.trace();
+      }
+    }
+
+    // Запускаем
+    start();
+  })();
   </script>
 </body>
 </html>
