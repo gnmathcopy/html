@@ -1,57 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <meta
-      name="viewport"
-      content="initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no"
-    />
-    <title>1 on 1 Soccer | gnmathcopy</title>
+<head>
+  <meta charset="UTF-8">
+  <title>1 on 1 Soccer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Устанавливаем базовый путь для всех файлов -->
+  <base href="https://cdn.jsdelivr.net/gh/gnmathcopy/assets@main/567/">
+  
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+    }
+    #content {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <!-- Контейнер, который ищет игра -->
+  <div id="content"></div>
 
-    <!-- CSS через jsDelivr -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/gh/gnmathcopy/assets@main/567/css/stylesheet.css"
-      type="text/css"
-    />
-  </head>
+  <!-- Основной JS-файл игры -->
+  <script src="1-on-1-soccer.min.js?v=25"></script>
 
-  <body style="overflow: hidden">
-    <!-- 👇 этот блок нужен, чтобы убрать ошибку -->
-    <div id="content">
-      <div id="orientation"></div>
-      <div id="gameCanvas"></div>
-      <div id="loader">Loading ...</div>
-    </div>
+  <!-- Все патчи и библиотеки Phaser и KiZi -->
+  <script src="patch/cdn/phaser/phaser-ads.min.js"></script>
+  <script src="patch/cdn/phaser/phaser-cachebuster.min.js"></script>
+  <script src="patch/cdn/phaser/phaser-spine.min.js"></script>
+  <script src="patch/cdn/kizi/splash.js"></script>
 
-    <script type="text/javascript">
-      const ga = function () {
-        console.log("ga", arguments);
-      };
-
-      const baseURL = "https://cdn.jsdelivr.net/gh/gnmathcopy/assets@main/567/";
-      const versionFile = baseURL + "version.js";
-      const gameFile = baseURL + "1-on-1-soccer.min.js";
-
-      function addScript(src, buster, callback) {
-        const s = document.createElement("script");
-        s.src = src + "?v=" + buster;
-        if (typeof callback === "function") {
-          s.onload = callback;
-        }
-        document.body.appendChild(s);
+  <!-- Проверка загрузки -->
+  <script>
+    window.addEventListener("load", () => {
+      console.log("✅ Игра 1-on-1 Soccer загружена через jsDelivr!");
+      const content = document.getElementById("content");
+      if (!content) {
+        console.error("❌ Элемент #content не найден! Добавь <div id='content'></div> в HTML.");
       }
-
-      addScript(versionFile, Date.now(), function () {
-        addScript(
-          gameFile,
-          typeof version !== "undefined" ? version : Date.now(),
-          function () {
-            console.log("✅ Игра загружена через jsDelivr");
-          }
-        );
-      });
-    </script>
-  </body>
+    });
+  </script>
+</body>
 </html>
